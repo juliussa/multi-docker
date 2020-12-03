@@ -1,0 +1,25 @@
+sudo: required
+language: generic 
+services: 
+    - docker
+
+before_install:
+  - docker build -t afigienas321/react-test -f ./client/Dockerfile.dev ./client
+
+script: 
+  - docker run -e CI=true afigienas321/react-test npm test
+
+after_success:
+  - docker build -t afigienas321/multi-client ./client
+  - docker build -t afigienas321/multi-nginx ./nginx
+  - docker build -t afigienas321/multi-server ./server
+  - docker build -t afigienas321/multi-worker ./worker
+  # Log in to docker CLI
+  - echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_ID" --password-stdin
+  # Take those images and push them to docker hub
+  - docker push afigienas321/multi-client
+  - docker push afigienas321/multi-nginx
+  - docker push afigienas321/multi-server
+  - docker push afigienas321/multi-worker
+
+
